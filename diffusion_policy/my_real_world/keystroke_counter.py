@@ -31,12 +31,6 @@ class KeystrokeCounter(Listener):
             events = list(self.key_press_list)
             self.key_press_list = list()
             return events
-    def get_key_state(self, key_name):
-        with self.lock:
-            key = KeyCode.from_char(key_name) if len(key_name) == 1 else getattr(Key, key_name, None)
-            if key is None:
-                raise ValueError(f"Invalid key name: {key_name}")
-            return self.key_count_map[key]
 
 if __name__ == '__main__':
     import time
@@ -49,20 +43,3 @@ if __name__ == '__main__':
         except KeyboardInterrupt:
             events = counter.get_press_events()
             print(events)
-            def get_key_state(self, key_name):
-                with self.lock:
-                    key = KeyCode.from_char(key_name) if len(key_name) == 1 else getattr(Key, key_name, None)
-                    if key is None:
-                        raise ValueError(f"Invalid key name: {key_name}")
-                    return self.key_count_map[key]
-
-            key_counter = KeystrokeCounter()
-            with key_counter:
-                try:
-                    while True:
-                        stage = key_counter.get_key_state('space')
-                        print('Space key state:', stage)
-                        time.sleep(1/60)
-                except KeyboardInterrupt:
-                    events = key_counter.get_press_events()
-                    print(events)
