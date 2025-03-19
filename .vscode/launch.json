@@ -1,0 +1,32 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "train",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/train.py",
+            "console": "integratedTerminal",
+            "args": ["--config-dir=diffusion_policy/config", "--config-name=mytrain_diffusion_unet_real_image_workspace", "task.dataset_path=./data/demo_pusht_real"]
+        },
+        {
+            "name": "my demo",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/mydemo_real_robot.py",
+            "console": "integratedTerminal",
+            "args": ["-o", "data/demo_pusht_real", "--robot_ip", "192.168.1.10"]
+        },
+        {
+            "name": "eval real robot",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/myeval_real_robot.py",
+            "console": "integratedTerminal",
+            "args": ["-i", "data/outputs/latest.ckpt", "-o", "data/eval_pusht_real", "--robot_ip", "192.168.1.10"]
+        },
+    ]
+}

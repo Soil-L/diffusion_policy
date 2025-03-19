@@ -30,7 +30,7 @@ class SingleRealsense(mp.Process):
             shm_manager: SharedMemoryManager,
             serial_number,
             resolution=(1280,720),
-            capture_fps=30,
+            capture_fps=50,
             put_fps=None,
             put_downsample=True,
             record_fps=None,

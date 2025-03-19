@@ -39,13 +39,14 @@ def stop_recording(env, key_counter):
     print('Stopped.')
 
 def move_robot(env, key_stroke, t_command_target, stage):
+    step = 10  # Define a uniform step size
     move_map = {
-        'r': [0, 0, 50, 0, 0, 0],
-        'f': [0, 0, -50, 0, 0, 0],
-        'a': [50, 0, 0, 0, 0, 0],
-        'd': [-50, 0, 0, 0, 0, 0],
-        'w': [0, 50, 0, 0, 0, 0],
-        's': [0, -50, 0, 0, 0, 0]
+        'r': [0, 0, step, 0, 0, 0],
+        'f': [0, 0, -step, 0, 0, 0],
+        'a': [step, 0, 0, 0, 0, 0],
+        'd': [-step, 0, 0, 0, 0, 0],
+        's': [0, step, 0, 0, 0, 0],
+        'w': [0, -step, 0, 0, 0, 0]
     }
     target_pose = np.array(move_map[key_stroke])
     env.exec_actions(
@@ -111,6 +112,7 @@ def main(output, robot_ip, vis_camera_idx, init_joints, frequency, command_laten
             iter_idx = 0
             stop = False
             is_recording = False
+            stage = ''
             while not stop:
                 # calculate timing
                 t_cycle_end = t_start + (iter_idx + 1) * dt
