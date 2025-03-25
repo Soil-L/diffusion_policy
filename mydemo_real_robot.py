@@ -38,7 +38,7 @@ def stop_recording(env, key_counter):
     key_counter.clear()
     print('Stopped.')
 
-def move_robot(env, key_stroke, t_command_target, stage):
+def move_robot(env, key_stroke, t_command_target, stage=None):
     step = 10  # Define a uniform step size
     move_map = {
         'r': [0, 0, step, 0, 0, 0],

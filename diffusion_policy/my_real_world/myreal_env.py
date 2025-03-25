@@ -348,9 +348,10 @@ class RealEnv:
         # record actions
         if self.action_accumulator is not None:
             self.action_accumulator.put(
-                new_actions,
+                actions,
                 new_timestamps
             )
+            print(f'Save Actions: {actions}')
         if self.stage_accumulator is not None:
             self.stage_accumulator.put(
                 new_stages,

@@ -18,7 +18,7 @@
             "request": "launch",
             "program": "${workspaceFolder}/mydemo_real_robot.py",
             "console": "integratedTerminal",
-            "args": ["-o", "data/demo_pusht_real", "--robot_ip", "192.168.1.10"]
+            "args": ["-o", "data/demo_pusht_real_V3", "--robot_ip", "192.168.1.10"]
         },
         {
             "name": "eval real robot",
@@ -26,7 +26,7 @@
             "request": "launch",
             "program": "${workspaceFolder}/myeval_real_robot.py",
             "console": "integratedTerminal",
-            "args": ["-i", "data/outputs/latest.ckpt", "-o", "data/eval_pusht_real", "--robot_ip", "192.168.1.10"]
+            "args": ["-i", "data/V3/epoch=0200-train_loss=0.021.ckpt", "-o", "data/eval_pusht_real", "--robot_ip", "192.168.1.10"]
         },
     ]
 }

@@ -48,6 +48,28 @@ from diffusion_policy.common.cv2_util import get_image_transform
 
 OmegaConf.register_new_resolver("eval", eval, replace=True)
 
+
+def move_robot(env, key_stroke, t_command_target, stage=None):
+    step = 10  # Define a uniform step size
+    move_map = {
+        'r': [0, 0, step, 0, 0, 0],
+        'f': [0, 0, -step, 0, 0, 0],
+        'a': [step, 0, 0, 0, 0, 0],
+        'd': [-step, 0, 0, 0, 0, 0],
+        's': [0, step, 0, 0, 0, 0],
+        'w': [0, -step, 0, 0, 0, 0]
+    }
+    target_pose = np.array(move_map[key_stroke])
+    env.exec_actions(
+        actions=[target_pose], 
+        timestamps=[t_command_target - time.monotonic() + time.time()],
+        stages=[stage]
+    )
+    print(f'Press "{key_stroke}" to move.')
+
+
+
+
 @click.command()
 @click.option('--input', '-i', required=True, help='Path to checkpoint')
 @click.option('--output', '-o', required=True, help='Directory to save recording')
@@ -189,7 +211,8 @@ def main(input, output, robot_ip, match_dataset, match_episode,
                 target_pose = state['TargetTCPPose']
                 t_start = time.monotonic()
                 iter_idx = 0
-                while True:
+                human_flag = True
+                while human_flag==True:
                     # calculate timing
                     t_cycle_end = t_start + (iter_idx + 1) * dt
                     t_sample = t_cycle_end - command_latency
@@ -226,47 +249,21 @@ def main(input, output, robot_ip, match_dataset, match_episode,
                         color=(255,255,255)
                     )
                     cv2.imshow('default', vis_img[...,::-1])
-                    key_stroke = cv2.pollKey()
+                    key = cv2.pollKey()
                     key_events = kc.get_press_events()
-                    if 'q' in key_events:
-                        # Exit program
-                        env.end_episode()
-                        exit(0)
-                    elif 'c' in key_events:
-                        # Exit human control loop
-                        # hand control over to the policy
-                        break
-
-                    precise_wait(t_sample)
-                    # get teleop command
-                    key_events = kc.get_press_events()
-                    dpos = np.zeros(3)
-                    drot_xyz = np.zeros(3)
-                    if 'w' in key_events:
-                        dpos[0] += env.max_pos_speed / frequency
-                    if 's' in key_events:
-                        dpos[0] -= env.max_pos_speed / frequency
-                    if 'a' in key_events:
-                        dpos[1] -= env.max_pos_speed / frequency
-                    if 'd' in key_events:
-                        dpos[1] += env.max_pos_speed / frequency
-                    if 'e' in key_events:
-                        dpos[2] += env.max_pos_speed / frequency
-                    if 'q' in key_events:
-                        dpos[2] -= env.max_pos_speed / frequency
+                    for key_stroke in key_events:
+                        if key_stroke == 'q':
+                            # Exit program
+                            env.end_episode()
+                            exit(0)
+                        elif key_stroke == 'c':
+                            # Exit human control loop
+                            # hand control over to the policy
+                            human_flag = False
+                            break
+                        if key_stroke in ['a', 'd', 'w', 's', 'e', 'q']:
+                            move_robot(env, key_stroke, t_command_target)
                     
-
-                    drot = st.Rotation.from_euler('xyz', drot_xyz)
-                    target_pose[:3] += dpos
-                    target_pose[3:] = (drot * st.Rotation.from_rotvec(
-                        target_pose[3:])).as_rotvec()
-                    # clip target pose
-                    target_pose[:2] = np.clip(target_pose[:2], [0.25, -0.45], [0.77, 0.40])
-
-                    # execute teleop command
-                    env.exec_actions(
-                        actions=[target_pose], 
-                        timestamps=[t_command_target-time.monotonic()+time.time()])
                     precise_wait(t_cycle_end)
                     iter_idx += 1
                 
@@ -310,7 +307,7 @@ def main(input, output, robot_ip, match_dataset, match_episode,
                         
                         # convert policy action to env actions
                         if delta_action:
-                            assert len(action) == 1
+                            # assert len(action) == 1
                             if perv_target_pose is None:
                                 perv_target_pose = obs['robot_eef_pose'][-1]
                             this_target_pose = perv_target_pose.copy()
@@ -322,11 +319,15 @@ def main(input, output, robot_ip, match_dataset, match_episode,
                             this_target_poses[:] = target_pose
                             this_target_poses[:,[0,1,2,3,4,5]] = action
 
+                        
+
+
+
                         # deal with timing
                         # the same step actions are always the target for
                         action_timestamps = (np.arange(len(action), dtype=np.float64) + action_offset
                             ) * dt + obs_timestamps[-1]
-                        action_exec_latency = 0.01
+                        action_exec_latency = 0.0
                         curr_time = time.time()
                         is_new = action_timestamps > (curr_time + action_exec_latency)
                         if np.sum(is_new) == 0:
@@ -342,8 +343,8 @@ def main(input, output, robot_ip, match_dataset, match_episode,
                             action_timestamps = action_timestamps[is_new]
 
                         # clip actions
-                        this_target_poses[:,:2] = np.clip(
-                            this_target_poses[:,:2], [0.25, -0.45], [0.77, 0.40])
+                        # this_target_poses[:,:2] = np.clip(
+                        #     this_target_poses[:,:2], [0.25, -0.45], [0.77, 0.40])
 
                         # execute actions
                         env.exec_actions(
